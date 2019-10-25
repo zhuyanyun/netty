@@ -15,14 +15,14 @@
  */
 package io.netty.example.worldclock;
 
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.protobuf.ProtobufDecoder;
-import io.netty.handler.codec.protobuf.ProtobufEncoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.handler.ssl.SslContext;
+        import io.netty.channel.ChannelInitializer;
+        import io.netty.channel.ChannelPipeline;
+        import io.netty.channel.socket.SocketChannel;
+        import io.netty.handler.codec.protobuf.ProtobufDecoder;
+        import io.netty.handler.codec.protobuf.ProtobufEncoder;
+        import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+        import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+        import io.netty.handler.ssl.SslContext;
 
 public class WorldClockClientInitializer extends ChannelInitializer<SocketChannel> {
 
@@ -39,12 +39,15 @@ public class WorldClockClientInitializer extends ChannelInitializer<SocketChanne
             p.addLast(sslCtx.newHandler(ch.alloc(), WorldClockClient.HOST, WorldClockClient.PORT));
         }
 
+        //一次解码
         p.addLast(new ProtobufVarint32FrameDecoder());
+        //二次解码
         p.addLast(new ProtobufDecoder(WorldClockProtocol.LocalTimes.getDefaultInstance()));
 
         p.addLast(new ProtobufVarint32LengthFieldPrepender());
         p.addLast(new ProtobufEncoder());
 
+        //业务处理
         p.addLast(new WorldClockClientHandler());
     }
 }

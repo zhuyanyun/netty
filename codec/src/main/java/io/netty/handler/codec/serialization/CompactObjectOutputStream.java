@@ -31,6 +31,7 @@ class CompactObjectOutputStream extends ObjectOutputStream {
 
     @Override
     protected void writeStreamHeader() throws IOException {
+        //比较JDK的，少一个.writeShort(STREAM_MAGIC); 魔数
         writeByte(STREAM_VERSION);
     }
 
@@ -42,8 +43,23 @@ class CompactObjectOutputStream extends ObjectOutputStream {
             write(TYPE_FAT_DESCRIPTOR);
             super.writeClassDescriptor(desc);
         } else {
+            //比较JDK的，少很多信息；元信息
             write(TYPE_THIN_DESCRIPTOR);
+            //但是也写了类的名字，这点在反序列化（用反射）时就会用到
             writeUTF(desc.getName());
         }
-    }
+
+        /** TODO 下面是jDK代码，JDK的序列化多写了下面的一些信息
+        out.writeShort(fields.length); // 写入对象的字段的个数
+        for (int i = 0; i < fields.length; i++) {
+            ObjectStreamField f = fields[i];
+            out.writeByte(f.getTypeCode());
+            out.writeUTF(f.getName());
+            if (!f.isPrimitive()) {
+                // 如果不是原始类型，即是对象或者Interface
+                // 则会写入表示对象或者类的类型字符串
+                out.writeTypeString(f.getTypeString());
+            }
+        } */
+     }
 }
