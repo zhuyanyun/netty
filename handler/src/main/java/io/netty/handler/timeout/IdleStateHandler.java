@@ -414,6 +414,9 @@ public class IdleStateHandler extends ChannelDuplexHandler {
      */
     private boolean hasOutputChanged(ChannelHandlerContext ctx, boolean first) {
         if (observeOutput) {
+            //正常情况下，false,即写空闲的判断中的写是指写成功，但是实际上，有可能遇到几种情况：
+            //（1）写了，但是缓存区满了，写不出去   （2）写了一个大"数据"，写确实在"动"，但是没有完成。
+            //所以这个参数，判断是否有"写的意图"，而不是判断"是否写成功"。
 
             // We can take this shortcut if the ChannelPromises that got passed into write()
             // appear to complete. It indicates "change" on message level and we simply assume
@@ -490,14 +493,17 @@ public class IdleStateHandler extends ChannelDuplexHandler {
         protected void run(ChannelHandlerContext ctx) {
             long nextDelay = readerIdleTimeNanos;
             if (!reading) {
+                //计算是否idle的关键
                 nextDelay -= ticksInNanos() - lastReadTime;
             }
 
             if (nextDelay <= 0) {
+                //空闲了
                 // Reader is idle - set a new timeout and notify the callback.
                 readerIdleTimeout = schedule(ctx, this, readerIdleTimeNanos, TimeUnit.NANOSECONDS);
 
                 boolean first = firstReaderIdleEvent;
+                //firstReaderIdleEvent 下个读来之前，第一次idle之后，可能触发多次，都属于非第一次idle;
                 firstReaderIdleEvent = false;
 
                 try {
@@ -507,6 +513,7 @@ public class IdleStateHandler extends ChannelDuplexHandler {
                     ctx.fireExceptionCaught(t);
                 }
             } else {
+                //重新其一个监测task,用nextdelay时间
                 // Read occurred before the timeout - set a new timeout with shorter delay.
                 readerIdleTimeout = schedule(ctx, this, nextDelay, TimeUnit.NANOSECONDS);
             }
