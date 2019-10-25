@@ -46,7 +46,7 @@ import java.util.List;
  *     }
  * </pre>
  *
- * <h3>Frame detection</h3>
+ * <h3>Frame detection</h3>   三种处理消息边界的方式
  * <p>
  * Generally frame detection should be handled earlier in the pipeline by adding a
  * {@link DelimiterBasedFrameDecoder}, {@link FixedLengthFrameDecoder}, {@link LengthFieldBasedFrameDecoder},
@@ -124,12 +124,15 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                     buffer.writeBytes(in);
                 } else {
                     CompositeByteBuf composite;
+
+                    //创建composite bytebuf,如果已经创建过，就不用了
                     if (cumulation instanceof CompositeByteBuf) {
                         composite = (CompositeByteBuf) cumulation;
                     } else {
                         composite = alloc.compositeBuffer(Integer.MAX_VALUE);
                         composite.addComponent(true, cumulation);
                     }
+                    //避免内存复制
                     composite.addComponent(true, in);
                     in = null;
                     buffer = composite;
@@ -439,6 +442,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 }
 
                 int oldInputLength = in.readableBytes();
+                //decode中时，不能执行完handler remove清理操作
+                //那decode完之后需要清理数据
                 decodeRemovalReentryProtection(ctx, in, out);
 
                 // Check if this handler was removed before continuing the loop.

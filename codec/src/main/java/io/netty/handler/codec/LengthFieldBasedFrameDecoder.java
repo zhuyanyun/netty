@@ -44,9 +44,9 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
  * length field.  Therefore, it can be decoded with the simplistic parameter
  * combination.
  * <pre>
- * <b>lengthFieldOffset</b>   = <b>0</b>
- * <b>lengthFieldLength</b>   = <b>2</b>
- * lengthAdjustment    = 0
+ * <b>lengthFieldOffset</b>   = <b>0</b>  位移
+ * <b>lengthFieldLength</b>   = <b>2</b>  长度
+ * lengthAdjustment    = 0                               参数在13讲10分钟，沾包，半包解析
  * initialBytesToStrip = 0 (= do not strip header)
  *
  * BEFORE DECODE (14 bytes)         AFTER DECODE (14 bytes)
