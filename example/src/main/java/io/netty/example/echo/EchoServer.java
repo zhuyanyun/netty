@@ -16,6 +16,7 @@
 package io.netty.example.echo;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -64,18 +65,19 @@ public final class EchoServer {
 //             .childOption(ChannelOption.SO_KEEPALIVE, true);
 //             .childOption(NioChannelOption.SO_KEEPALIVE, true);
 
-             //切换到unpooled 的方式之一
+             //切换到unpooled 的方式   (一) PooledByteBufAllocator.DEFAULT  （二）  new PooledByteBufAllocator(false)
 
-             .childHandler(new ChannelInitializer<SocketChannel>() {
-                 @Override
-                 public void initChannel(SocketChannel ch) throws Exception {
-                     ChannelPipeline p = ch.pipeline();
-                     if (sslCtx != null) {
-                         p.addLast(sslCtx.newHandler(ch.alloc()));
+             .childOption(ChannelOption.ALLOCATOR, new PooledByteBufAllocator(false))
+                 .childHandler(new ChannelInitializer<SocketChannel>() {
+                     @Override
+                     public void initChannel(SocketChannel ch) throws Exception {
+                         ChannelPipeline p = ch.pipeline();
+                         if (sslCtx != null) {
+                             p.addLast(sslCtx.newHandler(ch.alloc()));
+                         }
+                         //p.addLast(new LoggingHandler(LogLevel.INFO));
+                         p.addLast(serverHandler);
                      }
-                     //p.addLast(new LoggingHandler(LogLevel.INFO));
-                     p.addLast(serverHandler);
-                 }
              });
 
             // Start the server.
